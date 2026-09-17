@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>TILINA EXE - PEPELAND</title>
     <style>
         * {
@@ -11,9 +11,12 @@
             box-sizing: border-box;
             user-select: none;
             -webkit-user-select: none;
+            -webkit-touch-callout: none;
         }
 
-        body {
+        html, body {
+            width: 100%;
+            height: 100%;
             background: #0d0614;
             color: #fff;
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
@@ -21,148 +24,158 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
         }
 
+        /* Contenedor Adaptable a Pantallas Celular */
         #game-container {
             position: relative;
-            box-shadow: 0 0 50px rgba(255, 105, 180, 0.4), 0 0 100px rgba(138, 43, 226, 0.2);
-            border-radius: 16px;
+            width: 100vw;
+            height: 56.25vw; /* Mantiene aspecto 16:9 */
+            max-height: 100vh;
+            max-width: 177.78vh; /* Mantiene aspecto 16:9 en pantallas muy altas */
+            box-shadow: 0 0 30px rgba(255, 105, 180, 0.4), 0 0 60px rgba(138, 43, 226, 0.2);
+            border-radius: 12px;
             overflow: hidden;
             border: 2px solid rgba(255, 183, 197, 0.6);
             background: #000;
         }
 
         canvas {
+            width: 100%;
+            height: 100%;
             display: block;
             image-rendering: -webkit-optimize-contrast;
             image-rendering: crisp-edges;
         }
 
-        /* UI Estilo AAA Glassmorphism */
+        /* UI Estilo AAA Glassmorphism - Adaptable a Celular */
         .ui-panel {
             position: absolute;
-            top: 20px;
-            left: 20px;
-            background: rgba(15, 8, 28, 0.65);
-            padding: 14px 22px;
-            border-radius: 12px;
+            top: 10px;
+            left: 10px;
+            background: rgba(15, 8, 28, 0.7);
+            padding: 8px 14px;
+            border-radius: 10px;
             border: 1px solid rgba(255, 183, 197, 0.3);
-            backdrop-filter: blur(12px);
-            font-size: 13px;
+            backdrop-filter: blur(10px);
+            font-size: 11px;
             pointer-events: none;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
             z-index: 10;
         }
 
         .ui-panel h1 {
-            font-size: 20px;
+            font-size: 14px;
             background: linear-gradient(45deg, #ff9a9e, #fecfef, #a1c4fd);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            margin-bottom: 6px;
+            margin-bottom: 3px;
             font-weight: 900;
-            letter-spacing: 1.5px;
-            filter: drop-shadow(0 0 8px rgba(255, 154, 158, 0.6));
+            letter-spacing: 1px;
+            filter: drop-shadow(0 0 6px rgba(255, 154, 158, 0.6));
         }
 
         .controls-hint {
             position: absolute;
-            bottom: 20px;
+            bottom: 10px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(10, 5, 20, 0.75);
-            padding: 10px 22px;
-            border-radius: 30px;
-            font-size: 13px;
+            background: rgba(10, 5, 20, 0.8);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 11px;
             border: 1px solid rgba(255, 183, 197, 0.3);
             backdrop-filter: blur(8px);
             pointer-events: none;
             z-index: 10;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.6);
-            letter-spacing: 0.5px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+            white-space: nowrap;
         }
 
         .kanji-bg {
             position: absolute;
-            top: 15px;
-            right: 200px;
-            font-size: 45px;
+            top: 10px;
+            right: 140px;
+            font-size: 28px;
             color: rgba(255, 183, 197, 0.15);
             font-weight: 900;
             pointer-events: none;
             z-index: 10;
-            text-shadow: 0 0 20px rgba(255, 183, 197, 0.2);
+            text-shadow: 0 0 15px rgba(255, 183, 197, 0.2);
         }
 
         /* Botón Neón Interactivo */
         .msg-btn {
             position: absolute;
-            top: 20px;
-            right: 20px;
+            top: 10px;
+            right: 10px;
             background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%);
             color: #fff;
             border: none;
-            padding: 12px 22px;
+            padding: 8px 14px;
             font-weight: 700;
-            border-radius: 30px;
+            border-radius: 20px;
             cursor: pointer;
-            box-shadow: 0 0 20px rgba(255, 117, 140, 0.6);
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 0 15px rgba(255, 117, 140, 0.6);
+            transition: all 0.2s ease;
             z-index: 20;
-            font-size: 13px;
-            letter-spacing: 0.5px;
-        }
-
-        .msg-btn:hover {
-            transform: translateY(-2px) scale(1.05);
-            box-shadow: 0 0 30px rgba(255, 117, 140, 0.9);
+            font-size: 11px;
         }
 
         .msg-btn:active {
-            transform: translateY(1px) scale(0.97);
+            transform: scale(0.95);
         }
 
-        /* Controles Táctiles Neón */
+        /* Controles Táctiles Adaptados para Pulgares */
         .touch-controls {
             position: absolute;
-            bottom: 25px;
+            bottom: 12px;
             width: 100%;
             display: flex;
             justify-content: space-between;
-            padding: 0 25px;
+            padding: 0 15px;
             pointer-events: none;
             z-index: 20;
         }
 
         .d-pad, .action-pad {
             display: flex;
-            gap: 15px;
+            gap: 10px;
             pointer-events: auto;
         }
 
         .touch-btn {
-            width: 60px;
-            height: 60px;
-            background: rgba(255, 183, 197, 0.12);
-            border: 1.5px solid rgba(255, 183, 197, 0.4);
+            width: 48px;
+            height: 48px;
+            background: rgba(255, 183, 197, 0.18);
+            border: 1.5px solid rgba(255, 183, 197, 0.5);
             border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 20px;
+            font-size: 18px;
             color: #fff;
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(8px);
             touch-action: manipulation;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
-            transition: all 0.2s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+            transition: all 0.1s ease;
         }
 
         .touch-btn:active {
-            background: rgba(255, 117, 140, 0.5);
+            background: rgba(255, 117, 140, 0.6);
             border-color: #ff758c;
             transform: scale(0.9);
-            box-shadow: 0 0 20px rgba(255, 117, 140, 0.8);
+            box-shadow: 0 0 15px rgba(255, 117, 140, 0.8);
+        }
+
+        /* Ocultar texto de ayuda en pantallas muy pequeñas para no obstruir */
+        @media (max-width: 600px) {
+            .controls-hint {
+                display: none;
+            }
+            .kanji-bg {
+                display: none;
+            }
         }
     </style>
 </head>
@@ -171,11 +184,11 @@
 <div id="game-container">
     <div class="ui-panel">
         <h1>TILINA EXE</h1>
-        <p>🌸 Flores Mágicas: <span id="flower-count">0</span></p>
-        <p>🎏 Letreros de Amor: <span id="sign-count">0</span></p>
+        <p>🌸 Flores: <span id="flower-count">0</span></p>
+        <p>🎏 Letreros: <span id="sign-count">0</span></p>
     </div>
     
-    <button class="msg-btn" onclick="changeLoveMessage()">💌 Cambiar Mensaje</button>
+    <button class="msg-btn" onclick="changeLoveMessage()">💌 Cambiar</button>
     <div class="kanji-bg">愛してる</div>
 
     <div class="touch-controls">
@@ -189,7 +202,7 @@
     </div>
 
     <div class="controls-hint">
-        🎮 <b>A/D / Táctil</b>: Mover | <b>W / ▲</b>: Saltar | Acércate al letrero ❤️
+        🎮 <b>A/D / Táctil</b>: Mover | <b>W / ▲</b>: Saltar
     </div>
     <canvas id="gameCanvas" width="960" height="540"></canvas>
 </div>
@@ -242,8 +255,11 @@ window.addEventListener('keyup', e => keys[e.code] = false);
 
 function setupTouchButton(id, code) {
     const btn = document.getElementById(id);
-    btn.addEventListener('touchstart', (e) => { e.preventDefault(); keys[code] = true; });
-    btn.addEventListener('touchend', (e) => { e.preventDefault(); keys[code] = false; });
+    const startAction = (e) => { e.preventDefault(); keys[code] = true; };
+    const endAction = (e) => { e.preventDefault(); keys[code] = false; };
+    
+    btn.addEventListener('touchstart', startAction, {passive: false});
+    btn.addEventListener('touchend', endAction, {passive: false});
     btn.addEventListener('mousedown', () => keys[code] = true);
     btn.addEventListener('mouseup', () => keys[code] = false);
 }
@@ -281,7 +297,7 @@ function generateWorld() {
     document.getElementById('sign-count').innerText = signs.length;
 }
 
-// Luciérnagas Mágicas (Fireflies)
+// Luciérnagas Mágicas
 for (let i = 0; i < 25; i++) {
     fireflies.push({
         x: Math.random() * canvas.width,
@@ -307,17 +323,13 @@ for (let i = 0; i < 50; i++) {
     });
 }
 
-// DIBUJO CON EFECTOS GRÁFICOS AVANZADOS (AAA LOOK)
-
-// 1. Árbol de Sakura Renderizado en Hd Pixel Art con Sombra y Volumen
+// RENDERIZADO HD GRÁFICO
 function drawHDTree(x, y) {
-    // Sombra proyectada en el suelo
     ctx.fillStyle = "rgba(0, 0, 0, 0.35)";
     ctx.beginPath();
     ctx.ellipse(x + 80, y + 160, 70, 18, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    // Tronco con Textura Orgánica
     let gradient = ctx.createLinearGradient(x + 60, y, x + 100, y);
     gradient.addColorStop(0, '#2d1810');
     gradient.addColorStop(0.5, '#4a2817');
@@ -331,7 +343,6 @@ function drawHDTree(x, y) {
     ctx.quadraticCurveTo(x + 90, y + 90, x + 95, y + 160);
     ctx.fill();
 
-    // Copa de Cerezos con Capas de Brillo (Volumen 3D)
     const layers = [
         { offsetX: 0, offsetY: -20, r: 65, col: '#d81b60' },
         { offsetX: -35, offsetY: 10, r: 50, col: '#e91e63' },
@@ -354,19 +365,15 @@ function drawHDTree(x, y) {
     });
 }
 
-// 2. Flor Neón Pixel Mágica
 function drawHDFlower(x, y) {
-    // Glow sutil
     ctx.shadowBlur = 8;
     ctx.shadowColor = "#ff80ab";
 
-    // Tallo
     ctx.fillStyle = "#4caf50";
     ctx.fillRect(x + 8, y + 10, 3, 14);
     ctx.fillRect(x + 4, y + 16, 4, 3);
     ctx.fillRect(x + 11, y + 14, 4, 3);
 
-    // Pétalos Mágicos con Gradiente
     let g = ctx.createLinearGradient(x, y, x + 18, y + 12);
     g.addColorStop(0, '#ff80ab');
     g.addColorStop(1, '#ff4081');
@@ -379,63 +386,51 @@ function drawHDFlower(x, y) {
     ctx.arc(x + 9.5, y + 8, 4, 0, Math.PI * 2);
     ctx.fill();
 
-    // Centro Brillante
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(x + 8, y + 5, 3, 3);
-
-    ctx.shadowBlur = 0; // Restablecer
+    ctx.shadowBlur = 0;
 }
 
-// 3. Gato Pusheen HD + Bocadillo MEOW! estilo Cómic Neón
 function drawHDCat(x, y) {
-    // Sombra del gato
     ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
     ctx.beginPath();
     ctx.ellipse(x + 30, y + 36, 25, 8, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    // Cuerpo con degradado de piel
     let g = ctx.createLinearGradient(x, y, x + 60, y + 40);
     g.addColorStop(0, '#b0bec5');
     g.addColorStop(1, '#78909c');
     ctx.fillStyle = g;
 
-    // Redondeado
     ctx.beginPath();
     ctx.roundRect(x, y + 8, 55, 28, 14);
     ctx.fill();
 
-    // Orejas
     ctx.beginPath();
     ctx.moveTo(x + 8, y + 10); ctx.lineTo(x + 14, y + 0); ctx.lineTo(x + 20, y + 10);
     ctx.moveTo(x + 35, y + 10); ctx.lineTo(x + 41, y + 0); ctx.lineTo(x + 47, y + 10);
     ctx.fill();
 
-    // Ojos y Bigotes
     ctx.fillStyle = "#263238";
     ctx.beginPath();
     ctx.arc(x + 16, y + 18, 2.5, 0, Math.PI * 2);
     ctx.arc(x + 38, y + 18, 2.5, 0, Math.PI * 2);
     ctx.fill();
 
-    // Rubor Rosado
     ctx.fillStyle = "#ff80ab";
     ctx.beginPath();
     ctx.arc(x + 11, y + 22, 3.5, 0, Math.PI * 2);
     ctx.arc(x + 43, y + 22, 3.5, 0, Math.PI * 2);
     ctx.fill();
 
-    // Bocadillo "MEOW!" Neón
     drawGlowBubble(x - 10, y - 42, "MEOW! 🐾", "#ff4081");
 }
 
-// 4. Bocadillos de Diálogo Glossy Neón "I love you! <3"
 function drawGlowBubble(x, y, text, glowColor) {
     ctx.save();
     ctx.shadowBlur = 15;
     ctx.shadowColor = glowColor;
 
-    // Fondo oscuro con borde neón
     ctx.fillStyle = "rgba(15, 8, 25, 0.9)";
     ctx.strokeStyle = glowColor;
     ctx.lineWidth = 2;
@@ -445,7 +440,6 @@ function drawGlowBubble(x, y, text, glowColor) {
     ctx.fill();
     ctx.stroke();
 
-    // Piquito
     ctx.beginPath();
     ctx.moveTo(x + 20, y + 30);
     ctx.lineTo(x + 25, y + 37);
@@ -453,7 +447,6 @@ function drawGlowBubble(x, y, text, glowColor) {
     ctx.fill();
     ctx.stroke();
 
-    // Texto con luz
     ctx.fillStyle = "#ffffff";
     ctx.font = "bold 12px 'Segoe UI', system-ui";
     ctx.textAlign = "center";
@@ -461,7 +454,6 @@ function drawGlowBubble(x, y, text, glowColor) {
     ctx.restore();
 }
 
-// Física del Jugador
 function updatePlayer() {
     if (keys['KeyA'] || keys['ArrowLeft']) {
         player.vx = -player.speed;
@@ -477,7 +469,6 @@ function updatePlayer() {
         player.vy = player.jumpPower;
         player.grounded = false;
 
-        // Partículas de luz al saltar
         for (let i = 0; i < 10; i++) {
             particles.push({
                 x: player.x + player.width / 2,
@@ -505,11 +496,9 @@ function updatePlayer() {
         player.grounded = true;
     }
 
-    // Guardar estela para efecto de movimiento fluido
     player.trail.push({ x: player.x, y: player.y, alpha: 0.5 });
     if (player.trail.length > 5) player.trail.shift();
 
-    // Detectar letreros
     player.activeMessage = "";
     signs.forEach(sign => {
         let dist = Math.abs((player.x + player.width / 2) - (sign.x + TILE_SIZE / 2));
@@ -517,11 +506,9 @@ function updatePlayer() {
     });
 }
 
-// BUCLE DIBUJO Y RENDERIZADO AAA
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // 1. Fondo de Cielo Neón Nocturno
     let skyGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
     skyGradient.addColorStop(0, '#0d0618');
     skyGradient.addColorStop(0.5, '#231138');
@@ -529,7 +516,6 @@ function draw() {
     ctx.fillStyle = skyGradient;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // 2. Luna Neón Gigante con Resplandor Mágico
     ctx.save();
     ctx.shadowBlur = 40;
     ctx.shadowColor = "rgba(255, 200, 225, 0.8)";
@@ -543,7 +529,6 @@ function draw() {
     ctx.fill();
     ctx.restore();
 
-    // 3. Montañas lejanas con Parallax
     ctx.fillStyle = "#1b0b2e";
     ctx.beginPath();
     ctx.moveTo(0, 390);
@@ -552,20 +537,18 @@ function draw() {
     ctx.lineTo(960, 540); ctx.lineTo(0, 540);
     ctx.fill();
 
-    // 4. Terreno estilo Terraria HD con Textura Brillante
     for (let r = 0; r < ROWS; r++) {
         for (let c = 0; c < COLS; c++) {
-            if (map[r][c] === 1) { // Capa Superior de Hierba
+            if (map[r][c] === 1) {
                 let g = ctx.createLinearGradient(c * TILE_SIZE, r * TILE_SIZE, c * TILE_SIZE, (r + 1) * TILE_SIZE);
                 g.addColorStop(0, '#388e3c');
                 g.addColorStop(1, '#1b5e20');
                 ctx.fillStyle = g;
                 ctx.fillRect(c * TILE_SIZE, r * TILE_SIZE, TILE_SIZE, TILE_SIZE);
 
-                // Hierba Neón brillante
                 ctx.fillStyle = '#81c784';
                 ctx.fillRect(c * TILE_SIZE, r * TILE_SIZE, TILE_SIZE, 5);
-            } else if (map[r][c] === 2) { // Bloques Subterráneos
+            } else if (map[r][c] === 2) {
                 ctx.fillStyle = "#120e16";
                 ctx.fillRect(c * TILE_SIZE, r * TILE_SIZE, TILE_SIZE, TILE_SIZE);
                 ctx.strokeStyle = "rgba(255, 255, 255, 0.03)";
@@ -574,12 +557,10 @@ function draw() {
         }
     }
 
-    // 5. Dibujar Elementos del Escenario
     drawHDTree(18 * TILE_SIZE - 20, (GROUND_LEVEL - 5) * TILE_SIZE - 10);
     drawHDCat(24 * TILE_SIZE, (GROUND_LEVEL - 2) * TILE_SIZE + 4);
     flowers.forEach(f => drawHDFlower(f.x, f.y));
 
-    // 6. Letreros estilo Torii Japonés con Luz
     signs.forEach(s => {
         ctx.fillStyle = "#b71c1c";
         ctx.fillRect(s.x + 4, s.y - 4, 5, 36);
@@ -597,30 +578,25 @@ function draw() {
         drawGlowBubble(s.x - 30, s.y - 42, "I love you! <3", "#ff80ab");
     });
 
-    // 7. Estela y Jugador con Iluminación
     player.trail.forEach((t, i) => {
         ctx.fillStyle = `rgba(255, 128, 171, ${t.alpha * (i / player.trail.length)})`;
         ctx.fillRect(t.x, t.y, player.width, player.height);
     });
 
-    // Jugador (Ninja de Neón)
     ctx.save();
     ctx.shadowBlur = 12;
     ctx.shadowColor = "#ff4081";
-    ctx.fillStyle = "#ff4081"; // Bufanda
+    ctx.fillStyle = "#ff4081";
     ctx.fillRect(player.x - 3, player.y + 4, player.width + 6, 10);
 
-    ctx.fillStyle = "#1a1a2e"; // Traje Oscuro
+    ctx.fillStyle = "#1a1a2e";
     ctx.fillRect(player.x, player.y, player.width, player.height);
 
-    // Ojos brillantes
     ctx.fillStyle = "#00e676";
     let eyeX = player.facing === 'right' ? player.x + 15 : player.x + 3;
     ctx.fillRect(eyeX, player.y + 8, 6, 4);
     ctx.restore();
 
-    // 8. Efectos Globales de Partículas
-    // Luciérnagas
     fireflies.forEach(f => {
         f.x += f.speedX; f.y += f.speedY;
         f.alpha += f.pulse;
@@ -636,7 +612,6 @@ function draw() {
         ctx.restore();
     });
 
-    // Partículas de salto/movimiento
     particles.forEach((p, idx) => {
         p.x += p.vx; p.y += p.vy; p.life--;
         ctx.fillStyle = p.color;
@@ -644,7 +619,6 @@ function draw() {
         if (p.life <= 0) particles.splice(idx, 1);
     });
 
-    // Caída de Pétalos de Sakura
     cherryBlossoms.forEach(p => {
         p.y += p.speedY;
         p.x += Math.sin(p.angle) * 0.8;
@@ -665,7 +639,6 @@ function draw() {
         ctx.restore();
     });
 
-    // 9. Banner Superior de Mensaje Interactivos Neón
     if (player.activeMessage !== "") {
         ctx.save();
         ctx.shadowBlur = 25;
