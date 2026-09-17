@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>TILINA EXE - Ultra Deluxe Edition</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        body {
+            background: #0d0614;
+            color: #fff;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        #game-container {
+            position: relative;
+            box-shadow: 0 0 50px rgba(255, 105, 180, 0.4), 0 0 100px rgba(138, 43, 226, 0.2);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 2px solid rgba(255, 183, 197, 0.6);
+            background: #000;
+        }
+
+        canvas {
+            display: block;
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
+        }
+
+        /* UI Estilo AAA Glassmorphism */
+        .ui-panel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(15, 8, 28, 0.65);
+            padding: 14px 22px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 183, 197, 0.3);
+            backdrop-filter: blur(12px);
+            font-size: 13px;
+            pointer-events: none;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            z-index: 10;
+        }
+
+        .ui-panel h1 {
+            font-size: 20px;
+            background: linear-gradient(45deg, #ff9a9e, #fecfef, #a1c4fd);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 6px;
+            font-weight: 900;
+            letter-spacing: 1.5px;
+            filter: drop-shadow(0 0 8px rgba(255, 154, 158, 0.6));
+        }
+
+        .controls-hint {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(10, 5, 20, 0.75);
+            padding: 10px 22px;
+            border-radius: 30px;
+            font-size: 13px;
+            border: 1px solid rgba(255, 183, 197, 0.3);
+            backdrop-filter: blur(8px);
+            pointer-events: none;
+            z-index: 10;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+            letter-spacing: 0.5px;
+        }
+
+        .kanji-bg {
+            position: absolute;
+            top: 15px;
+            right: 200px;
+            font-size: 45px;
+            color: rgba(255, 183, 197, 0.15);
+            font-weight: 900;
+            pointer-events: none;
+            z-index: 10;
+            text-shadow: 0 0 20px rgba(255, 183, 197, 0.2);
+        }
+
+        /* Botón Neón Interactivo */
+        .msg-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%);
+            color: #fff;
+            border: none;
+            padding: 12px 22px;
+            font-weight: 700;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(255, 117, 140, 0.6);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 20;
+            font-size: 13px;
+            letter-spacing: 0.5px;
+        }
+
+        .msg-btn:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 0 30px rgba(255, 117, 140, 0.9);
+        }
+
+        .msg-btn:active {
+            transform: translateY(1px) scale(0.97);
+        }
+
+        /* Controles Táctiles Neón */
+        .touch-controls {
+            position: absolute;
+            bottom: 25px;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 25px;
+            pointer-events: none;
+            z-index: 20;
+        }
+
+        .d-pad, .action-pad {
+            display: flex;
+            gap: 15px;
+            pointer-events: auto;
+        }
+
+        .touch-btn {
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 183, 197, 0.12);
+            border: 1.5px solid rgba(255, 183, 197, 0.4);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            color: #fff;
+            backdrop-filter: blur(10px);
+            touch-action: manipulation;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+            transition: all 0.2s ease;
+        }
+
+        .touch-btn:active {
+            background: rgba(255, 117, 140, 0.5);
+            border-color: #ff758c;
+            transform: scale(0.9);
+            box-shadow: 0 0 20px rgba(255, 117, 140, 0.8);
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div class="ui-panel">
+        <h1>TILINA EXE</h1>
+        <p>🌸 Flores Mágicas: <span id="flower-count">0</span></p>
+        <p>🎏 Letreros de Amor: <span id="sign-count">0</span></p>
+    </div>
+    
+    <button class="msg-btn" onclick="changeLoveMessage()">💌 Cambiar Mensaje</button>
+    <div class="kanji-bg">愛してる</div>
+
+    <div class="touch-controls">
+        <div class="d-pad">
+            <div class="touch-btn" id="btn-left">◀</div>
+            <div class="touch-btn" id="btn-right">▶</div>
+        </div>
+        <div class="action-pad">
+            <div class="touch-btn" id="btn-jump">▲</div>
+        </div>
+    </div>
+
+    <div class="controls-hint">
+        🎮 <b>A/D / Táctil</b>: Mover | <b>W / ▲</b>: Saltar | Acércate al letrero ❤️
+    </div>
+    <canvas id="gameCanvas" width="960" height="540"></canvas>
+</div>
+
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+const TILE_SIZE = 32;
+const ROWS = Math.floor(canvas.height / TILE_SIZE);
+const COLS = Math.floor(canvas.width / TILE_SIZE);
+const GROUND_LEVEL = 12;
+
+let particles = [];
+let cherryBlossoms = [];
+let fireflies = [];
+let signs = [];
+let flowers = [];
+
+const loveMessagesList = [
+    "soy tu sigma alfa 🐺🔥",
+    "Te amo tilina 67 ❤️",
+    "A que horas bloqueas a todos? 🤔🔒",
+    "Te amo blanca con derechos 💕✨",
+    "YA ESTAN LISTAS LAS DE HARINA? 🫓🔥"
+];
+
+let currentMsgIndex = 0;
+
+// Jugador con Estela y Física Suave
+const player = {
+    x: 120,
+    y: (GROUND_LEVEL - 2) * TILE_SIZE,
+    width: 24,
+    height: 38,
+    vx: 0,
+    vy: 0,
+    speed: 4.2,
+    jumpPower: -11,
+    gravity: 0.52,
+    grounded: false,
+    facing: 'right',
+    activeMessage: "",
+    trail: []
+};
+
+const keys = {};
+window.addEventListener('keydown', e => keys[e.code] = true);
+window.addEventListener('keyup', e => keys[e.code] = false);
+
+function setupTouchButton(id, code) {
+    const btn = document.getElementById(id);
+    btn.addEventListener('touchstart', (e) => { e.preventDefault(); keys[code] = true; });
+    btn.addEventListener('touchend', (e) => { e.preventDefault(); keys[code] = false; });
+    btn.addEventListener('mousedown', () => keys[code] = true);
+    btn.addEventListener('mouseup', () => keys[code] = false);
+}
+
+setupTouchButton('btn-left', 'KeyA');
+setupTouchButton('btn-right', 'KeyD');
+setupTouchButton('btn-jump', 'KeyW');
+
+function changeLoveMessage() {
+    currentMsgIndex = (currentMsgIndex + 1) % loveMessagesList.length;
+    signs.forEach(s => s.msg = loveMessagesList[currentMsgIndex]);
+}
+
+// Inicialización del Mundo
+const map = [];
+function generateWorld() {
+    for (let r = 0; r < ROWS; r++) {
+        map[r] = [];
+        for (let c = 0; c < COLS; c++) {
+            if (r > GROUND_LEVEL) map[r][c] = 2;
+            else if (r === GROUND_LEVEL) map[r][c] = 1;
+            else map[r][c] = 0;
+        }
+    }
+
+    for (let c = 2; c < COLS - 2; c += 2) {
+        if (Math.random() > 0.35 && c !== 18 && c !== 19 && c !== 20) {
+            flowers.push({ x: c * TILE_SIZE + 6, y: (GROUND_LEVEL - 1) * TILE_SIZE + 4 });
+        }
+    }
+
+    signs.push({ x: 8 * TILE_SIZE, y: (GROUND_LEVEL - 1) * TILE_SIZE, msg: loveMessagesList[0] });
+
+    document.getElementById('flower-count').innerText = flowers.length;
+    document.getElementById('sign-count').innerText = signs.length;
+}
+
+// Luciérnagas Mágicas (Fireflies)
+for (let i = 0; i < 25; i++) {
+    fireflies.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * (canvas.height - 150),
+        size: Math.random() * 2.5 + 1.5,
+        alpha: Math.random(),
+        speedX: (Math.random() - 0.5) * 0.6,
+        speedY: (Math.random() - 0.5) * 0.6,
+        pulse: Math.random() * 0.05
+    });
+}
+
+// Hojas de Sakura
+for (let i = 0; i < 50; i++) {
+    cherryBlossoms.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        size: Math.random() * 4 + 3,
+        speedY: Math.random() * 0.8 + 0.4,
+        speedX: Math.random() * 1.2 - 0.2,
+        angle: Math.random() * Math.PI * 2,
+        rotationSpeed: (Math.random() - 0.5) * 0.05
+    });
+}
+
+// DIBUJO CON EFECTOS GRÁFICOS AVANZADOS (AAA LOOK)
+
+// 1. Árbol de Sakura Renderizado en Hd Pixel Art con Sombra y Volumen
+function drawHDTree(x, y) {
+    // Sombra proyectada en el suelo
+    ctx.fillStyle = "rgba(0, 0, 0, 0.35)";
+    ctx.beginPath();
+    ctx.ellipse(x + 80, y + 160, 70, 18, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Tronco con Textura Orgánica
+    let gradient = ctx.createLinearGradient(x + 60, y, x + 100, y);
+    gradient.addColorStop(0, '#2d1810');
+    gradient.addColorStop(0.5, '#4a2817');
+    gradient.addColorStop(1, '#1a0d08');
+    ctx.fillStyle = gradient;
+    
+    ctx.beginPath();
+    ctx.moveTo(x + 70, y + 160);
+    ctx.quadraticCurveTo(x + 75, y + 90, x + 50, y + 50);
+    ctx.lineTo(x + 70, y + 50);
+    ctx.quadraticCurveTo(x + 90, y + 90, x + 95, y + 160);
+    ctx.fill();
+
+    // Copa de Cerezos con Capas de Brillo (Volumen 3D)
+    const layers = [
+        { offsetX: 0, offsetY: -20, r: 65, col: '#d81b60' },
+        { offsetX: -35, offsetY: 10, r: 50, col: '#e91e63' },
+        { offsetX: 35, offsetY: 10, r: 50, col: '#c2185b' },
+        { offsetX: -20, offsetY: -35, r: 55, col: '#f48fb1' },
+        { offsetX: 20, offsetY: -35, r: 55, col: '#ff80ab' },
+        { offsetX: 0, offsetY: -45, r: 45, col: '#ff80ab' }
+    ];
+
+    layers.forEach(l => {
+        let g = ctx.createRadialGradient(x + 60 + l.offsetX, y + 20 + l.offsetY, 5, x + 60 + l.offsetX, y + 20 + l.offsetY, l.r);
+        g.addColorStop(0, '#ffcdd2');
+        g.addColorStop(0.6, l.col);
+        g.addColorStop(1, 'rgba(136, 14, 79, 0.8)');
+        
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(x + 60 + l.offsetX, y + 20 + l.offsetY, l.r, 0, Math.PI * 2);
+        ctx.fill();
+    });
+}
+
+// 2. Flor Neón Pixel Mágica
+function drawHDFlower(x, y) {
+    // Glow sutil
+    ctx.shadowBlur = 8;
+    ctx.shadowColor = "#ff80ab";
+
+    // Tallo
+    ctx.fillStyle = "#4caf50";
+    ctx.fillRect(x + 8, y + 10, 3, 14);
+    ctx.fillRect(x + 4, y + 16, 4, 3);
+    ctx.fillRect(x + 11, y + 14, 4, 3);
+
+    // Pétalos Mágicos con Gradiente
+    let g = ctx.createLinearGradient(x, y, x + 18, y + 12);
+    g.addColorStop(0, '#ff80ab');
+    g.addColorStop(1, '#ff4081');
+    ctx.fillStyle = g;
+
+    ctx.beginPath();
+    ctx.arc(x + 5, y + 6, 4, 0, Math.PI * 2);
+    ctx.arc(x + 14, y + 6, 4, 0, Math.PI * 2);
+    ctx.arc(x + 9.5, y + 2, 5, 0, Math.PI * 2);
+    ctx.arc(x + 9.5, y + 8, 4, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Centro Brillante
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(x + 8, y + 5, 3, 3);
+
+    ctx.shadowBlur = 0; // Restablecer
+}
+
+// 3. Gato Pusheen HD + Bocadillo MEOW! estilo Cómic Neón
+function drawHDCat(x, y) {
+    // Sombra del gato
+    ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
+    ctx.beginPath();
+    ctx.ellipse(x + 30, y + 36, 25, 8, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Cuerpo con degradado de piel
+    let g = ctx.createLinearGradient(x, y, x + 60, y + 40);
+    g.addColorStop(0, '#b0bec5');
+    g.addColorStop(1, '#78909c');
+    ctx.fillStyle = g;
+
+    // Redondeado
+    ctx.beginPath();
+    ctx.roundRect(x, y + 8, 55, 28, 14);
+    ctx.fill();
+
+    // Orejas
+    ctx.beginPath();
+    ctx.moveTo(x + 8, y + 10); ctx.lineTo(x + 14, y + 0); ctx.lineTo(x + 20, y + 10);
+    ctx.moveTo(x + 35, y + 10); ctx.lineTo(x + 41, y + 0); ctx.lineTo(x + 47, y + 10);
+    ctx.fill();
+
+    // Ojos y Bigotes
+    ctx.fillStyle = "#263238";
+    ctx.beginPath();
+    ctx.arc(x + 16, y + 18, 2.5, 0, Math.PI * 2);
+    ctx.arc(x + 38, y + 18, 2.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Rubor Rosado
+    ctx.fillStyle = "#ff80ab";
+    ctx.beginPath();
+    ctx.arc(x + 11, y + 22, 3.5, 0, Math.PI * 2);
+    ctx.arc(x + 43, y + 22, 3.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Bocadillo "MEOW!" Neón
+    drawGlowBubble(x - 10, y - 42, "MEOW! 🐾", "#ff4081");
+}
+
+// 4. Bocadillos de Diálogo Glossy Neón "I love you! <3"
+function drawGlowBubble(x, y, text, glowColor) {
+    ctx.save();
+    ctx.shadowBlur = 15;
+    ctx.shadowColor = glowColor;
+
+    // Fondo oscuro con borde neón
+    ctx.fillStyle = "rgba(15, 8, 25, 0.9)";
+    ctx.strokeStyle = glowColor;
+    ctx.lineWidth = 2;
+
+    ctx.beginPath();
+    ctx.roundRect(x, y, 100, 30, 8);
+    ctx.fill();
+    ctx.stroke();
+
+    // Piquito
+    ctx.beginPath();
+    ctx.moveTo(x + 20, y + 30);
+    ctx.lineTo(x + 25, y + 37);
+    ctx.lineTo(x + 30, y + 30);
+    ctx.fill();
+    ctx.stroke();
+
+    // Texto con luz
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 12px 'Segoe UI', system-ui";
+    ctx.textAlign = "center";
+    ctx.fillText(text, x + 50, y + 19);
+    ctx.restore();
+}
+
+// Física del Jugador
+function updatePlayer() {
+    if (keys['KeyA'] || keys['ArrowLeft']) {
+        player.vx = -player.speed;
+        player.facing = 'left';
+    } else if (keys['KeyD'] || keys['ArrowRight']) {
+        player.vx = player.speed;
+        player.facing = 'right';
+    } else {
+        player.vx *= 0.78;
+    }
+
+    if ((keys['KeyW'] || keys['Space'] || keys['ArrowUp']) && player.grounded) {
+        player.vy = player.jumpPower;
+        player.grounded = false;
+
+        // Partículas de luz al saltar
+        for (let i = 0; i < 10; i++) {
+            particles.push({
+                x: player.x + player.width / 2,
+                y: player.y + player.height,
+                vx: (Math.random() - 0.5) * 4,
+                vy: Math.random() * -3,
+                life: 25,
+                color: '#ff80ab',
+                size: Math.random() * 4 + 2
+            });
+        }
+    }
+
+    player.vy += player.gravity;
+    player.x += player.vx;
+    player.y += player.vy;
+
+    if (player.x < 0) player.x = 0;
+    if (player.x + player.width > canvas.width) player.x = canvas.width - player.width;
+
+    const groundY = GROUND_LEVEL * TILE_SIZE;
+    if (player.y + player.height >= groundY) {
+        player.y = groundY - player.height;
+        player.vy = 0;
+        player.grounded = true;
+    }
+
+    // Guardar estela para efecto de movimiento fluido
+    player.trail.push({ x: player.x, y: player.y, alpha: 0.5 });
+    if (player.trail.length > 5) player.trail.shift();
+
+    // Detectar letreros
+    player.activeMessage = "";
+    signs.forEach(sign => {
+        let dist = Math.abs((player.x + player.width / 2) - (sign.x + TILE_SIZE / 2));
+        if (dist < 50) player.activeMessage = sign.msg;
+    });
+}
+
+// BUCLE DIBUJO Y RENDERIZADO AAA
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // 1. Fondo de Cielo Neón Nocturno
+    let skyGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    skyGradient.addColorStop(0, '#0d0618');
+    skyGradient.addColorStop(0.5, '#231138');
+    skyGradient.addColorStop(1, '#4a154b');
+    ctx.fillStyle = skyGradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // 2. Luna Neón Gigante con Resplandor Mágico
+    ctx.save();
+    ctx.shadowBlur = 40;
+    ctx.shadowColor = "rgba(255, 200, 225, 0.8)";
+    let moonGlow = ctx.createRadialGradient(780, 110, 10, 780, 110, 75);
+    moonGlow.addColorStop(0, '#ffffff');
+    moonGlow.addColorStop(0.7, '#ffe4e1');
+    moonGlow.addColorStop(1, 'rgba(255, 182, 193, 0.2)');
+    ctx.fillStyle = moonGlow;
+    ctx.beginPath();
+    ctx.arc(780, 110, 65, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    // 3. Montañas lejanas con Parallax
+    ctx.fillStyle = "#1b0b2e";
+    ctx.beginPath();
+    ctx.moveTo(0, 390);
+    ctx.lineTo(180, 260); ctx.lineTo(400, 390);
+    ctx.lineTo(650, 210); ctx.lineTo(960, 390);
+    ctx.lineTo(960, 540); ctx.lineTo(0, 540);
+    ctx.fill();
+
+    // 4. Terreno estilo Terraria HD con Textura Brillante
+    for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+            if (map[r][c] === 1) { // Capa Superior de Hierba
+                let g = ctx.createLinearGradient(c * TILE_SIZE, r * TILE_SIZE, c * TILE_SIZE, (r + 1) * TILE_SIZE);
+                g.addColorStop(0, '#388e3c');
+                g.addColorStop(1, '#1b5e20');
+                ctx.fillStyle = g;
+                ctx.fillRect(c * TILE_SIZE, r * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+
+                // Hierba Neón brillante
+                ctx.fillStyle = '#81c784';
+                ctx.fillRect(c * TILE_SIZE, r * TILE_SIZE, TILE_SIZE, 5);
+            } else if (map[r][c] === 2) { // Bloques Subterráneos
+                ctx.fillStyle = "#120e16";
+                ctx.fillRect(c * TILE_SIZE, r * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                ctx.strokeStyle = "rgba(255, 255, 255, 0.03)";
+                ctx.strokeRect(c * TILE_SIZE, r * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+            }
+        }
+    }
+
+    // 5. Dibujar Elementos del Escenario
+    drawHDTree(18 * TILE_SIZE - 20, (GROUND_LEVEL - 5) * TILE_SIZE - 10);
+    drawHDCat(24 * TILE_SIZE, (GROUND_LEVEL - 2) * TILE_SIZE + 4);
+    flowers.forEach(f => drawHDFlower(f.x, f.y));
+
+    // 6. Letreros estilo Torii Japonés con Luz
+    signs.forEach(s => {
+        ctx.fillStyle = "#b71c1c";
+        ctx.fillRect(s.x + 4, s.y - 4, 5, 36);
+        ctx.fillRect(s.x + 23, s.y - 4, 5, 36);
+
+        ctx.fillStyle = "#7f0000";
+        ctx.fillRect(s.x - 2, s.y + 2, 36, 18);
+        ctx.strokeStyle = "#ff80ab";
+        ctx.strokeRect(s.x - 2, s.y + 2, 36, 18);
+
+        ctx.fillStyle = "#ff80ab";
+        ctx.font = "bold 11px sans-serif";
+        ctx.fillText("愛", s.x + 12, s.y + 15);
+
+        drawGlowBubble(s.x - 30, s.y - 42, "I love you! <3", "#ff80ab");
+    });
+
+    // 7. Estela y Jugador con Iluminación
+    player.trail.forEach((t, i) => {
+        ctx.fillStyle = `rgba(255, 128, 171, ${t.alpha * (i / player.trail.length)})`;
+        ctx.fillRect(t.x, t.y, player.width, player.height);
+    });
+
+    // Jugador (Ninja de Neón)
+    ctx.save();
+    ctx.shadowBlur = 12;
+    ctx.shadowColor = "#ff4081";
+    ctx.fillStyle = "#ff4081"; // Bufanda
+    ctx.fillRect(player.x - 3, player.y + 4, player.width + 6, 10);
+
+    ctx.fillStyle = "#1a1a2e"; // Traje Oscuro
+    ctx.fillRect(player.x, player.y, player.width, player.height);
+
+    // Ojos brillantes
+    ctx.fillStyle = "#00e676";
+    let eyeX = player.facing === 'right' ? player.x + 15 : player.x + 3;
+    ctx.fillRect(eyeX, player.y + 8, 6, 4);
+    ctx.restore();
+
+    // 8. Efectos Globales de Partículas
+    // Luciérnagas
+    fireflies.forEach(f => {
+        f.x += f.speedX; f.y += f.speedY;
+        f.alpha += f.pulse;
+        if (f.alpha <= 0.2 || f.alpha >= 0.9) f.pulse = -f.pulse;
+
+        ctx.save();
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = "#ffee58";
+        ctx.fillStyle = `rgba(255, 238, 88, ${f.alpha})`;
+        ctx.beginPath();
+        ctx.arc(f.x, f.y, f.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+    });
+
+    // Partículas de salto/movimiento
+    particles.forEach((p, idx) => {
+        p.x += p.vx; p.y += p.vy; p.life--;
+        ctx.fillStyle = p.color;
+        ctx.fillRect(p.x, p.y, p.size, p.size);
+        if (p.life <= 0) particles.splice(idx, 1);
+    });
+
+    // Caída de Pétalos de Sakura
+    cherryBlossoms.forEach(p => {
+        p.y += p.speedY;
+        p.x += Math.sin(p.angle) * 0.8;
+        p.angle += p.rotationSpeed;
+
+        if (p.y > canvas.height) {
+            p.y = -10;
+            p.x = Math.random() * canvas.width;
+        }
+
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.angle);
+        ctx.fillStyle = "rgba(255, 182, 193, 0.85)";
+        ctx.beginPath();
+        ctx.ellipse(0, 0, p.size, p.size / 2, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+    });
+
+    // 9. Banner Superior de Mensaje Interactivos Neón
+    if (player.activeMessage !== "") {
+        ctx.save();
+        ctx.shadowBlur = 25;
+        ctx.shadowColor = "#ff4081";
+
+        let bG = ctx.createLinearGradient(canvas.width / 2 - 240, 0, canvas.width / 2 + 240, 0);
+        bG.addColorStop(0, 'rgba(20, 10, 30, 0.95)');
+        bG.addColorStop(0.5, 'rgba(50, 15, 45, 0.95)');
+        bG.addColorStop(1, 'rgba(20, 10, 30, 0.95)');
+
+        ctx.fillStyle = bG;
+        ctx.fillRect(canvas.width / 2 - 240, 75, 480, 52);
+        ctx.strokeStyle = "#ff4081";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(canvas.width / 2 - 240, 75, 480, 52);
+
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 16px 'Segoe UI', system-ui";
+        ctx.textAlign = "center";
+        ctx.fillText(player.activeMessage, canvas.width / 2, 107);
+        ctx.restore();
+    }
+}
+
+function gameLoop() {
+    updatePlayer();
+    draw();
+    requestAnimationFrame(gameLoop);
+}
+
+generateWorld();
+gameLoop();
+</script>
+</body>
+</html>
